@@ -141,7 +141,9 @@ final class KafkaConfigBuilder {
                 props.put("request.required.acks", 0);
             }
 
-            props.putAll(p.getProperties());
+            if (!isEmpty(p.getProperties())) {
+                props.putAll(p.getProperties());
+            }
 
             ZooKeeper zk = zkMap.get(p.getZookeeper());
             String brokers = obtainBrokers(zk);
