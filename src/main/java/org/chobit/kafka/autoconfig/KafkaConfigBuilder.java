@@ -72,7 +72,6 @@ final class KafkaConfigBuilder {
                 throw new KafkaConfigException("Processor class must be configured.");
             }
 
-
             Properties props = new Properties();
 
             /* add zookeeper config */

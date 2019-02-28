@@ -4,9 +4,9 @@ package org.chobit.kafka.autoconfig;
 import kafka.consumer.ConsumerConfig;
 import kafka.producer.ProducerConfig;
 import org.I0Itec.zkclient.ZkClient;
-import org.chobit.kafka.ConsumerBeanProcessor;
+import org.chobit.kafka.ConsumerStarter;
+import org.chobit.kafka.KafkaProducerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,17 +20,23 @@ public class KafkaAutoConfiguration {
 
 
     @Bean
-    @ConditionalOnMissingBean
     public KafkaConfig kafkaConfig(KafkaProperties props) {
         return new KafkaConfigBuilder().build(props);
     }
 
     @Bean
-    public ConsumerBeanProcessor consumerStarter(KafkaConfig kafkaConfig) {
+    public ConsumerStarter consumerStarter(KafkaConfig kafkaConfig) {
         if (isEmpty(kafkaConfig.getConsumers())) {
             return null;
         }
-        return new ConsumerBeanProcessor(kafkaConfig.getConsumers());
+        return new ConsumerStarter(kafkaConfig.isAutoStart(), kafkaConfig.getConsumers());
+    }
+
+    public KafkaProducerFactory producerFactory(KafkaConfig kafkaConfig) {
+        if (isEmpty(kafkaConfig.getProducers())) {
+            return null;
+        }
+        return new KafkaProducerFactory(kafkaConfig.getProducers());
     }
 
 }

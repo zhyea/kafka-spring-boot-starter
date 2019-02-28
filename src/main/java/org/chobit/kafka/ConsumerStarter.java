@@ -8,24 +8,65 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.PostConstruct;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConsumerBeanProcessor implements Shutdown, BeanPostProcessor {
+public class ConsumerStarter implements Shutdown, BeanPostProcessor {
 
-    private final Logger logger = LoggerFactory.getLogger(ConsumerBeanProcessor.class);
+    private final Logger logger = LoggerFactory.getLogger(ConsumerStarter.class);
 
+    private final boolean autoStart;
     private final List<ConsumerWorker> workers;
     private final Map<String, Processor> processors;
     private final List<ConsumerConfigWrapper> configs;
 
-    public ConsumerBeanProcessor(List<ConsumerConfigWrapper> configs) {
+    private final Set<String> expectProcessors;
+    private final AtomicBoolean needStart = new AtomicBoolean(true);
+
+    public ConsumerStarter(boolean autoStart, List<ConsumerConfigWrapper> configs) {
+        this.autoStart = autoStart;
         this.workers = new ArrayList<ConsumerWorker>(configs.size());
         this.configs = configs;
         this.processors = new ConcurrentHashMap<String, Processor>(configs.size());
+        this.expectProcessors = new HashSet<String>();
+        for (ConsumerConfigWrapper ccw : configs) {
+            expectProcessors.add(ccw.getProcessor().getName());
+        }
     }
+
+
+    @PostConstruct
+    public void autoStart() {
+        if (autoStart) {
+            Threads.newThread(new Runnable() {
+                @Override
+                public void run() {
+                    while (needStart.get()) {
+                        if (!checkAllNecessaryProcessorsSupplied()) {
+                            continue;
+                        }
+                        startup();
+                    }
+                }
+            }, "Consumer-starter-auto-start-thread", false).start();
+        }
+    }
+
+
+    private boolean checkAllNecessaryProcessorsSupplied() {
+        if (processors.size() < expectProcessors.size()) {
+            return false;
+        }
+        for (String s : expectProcessors) {
+            if (!processors.containsKey(s)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     public void startup() {
         for (ConsumerConfigWrapper ccw : configs) {
@@ -40,13 +81,14 @@ public class ConsumerBeanProcessor implements Shutdown, BeanPostProcessor {
             Threads.newThread(worker, "Consume-worker-thread-" + i++, false).start();
             worker.awaitStartup();
         }
-
-        logger.info("All consumer groups has been started.");
+        needStart.set(false);
+        logger.info("All consumer groups have been started.");
     }
 
 
     @Override
     public void shutdown() {
+        needStart.set(false);
         if (null != workers) {
             for (ConsumerWorker worker : workers) {
                 worker.shutdown();

@@ -104,7 +104,7 @@ public class ConsumerWorker extends AbstractConsumeThread implements Shutdown {
             startupComplete();
             try {
                 ConsumerIterator itr = stream.iterator();
-                while (itr.hasNext()) {
+                while (isRunning() && itr.hasNext()) {
                     Object message = itr.next().message();
                     processor.process(topic, message);
                 }
