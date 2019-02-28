@@ -138,7 +138,7 @@ final class KafkaConfigBuilder {
             props.put("producer.type", p.getType());
 
             if (sync == p.getType()) {
-                props.put("request.required.acks", 0);
+                props.put("request.required.acks", String.valueOf(0));
             }
 
             if (!isEmpty(p.getProperties())) {
