@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import static org.chobit.kafka.utils.Collections.isEmpty;
 
 @Configuration
-@ConditionalOnClass({ProducerConfig.class, ConsumerConfig.class})
+@ConditionalOnClass({ProducerConfig.class, ConsumerConfig.class, ZkClient.class})
 @EnableConfigurationProperties(KafkaProperties.class)
 public class KafkaAutoConfiguration {
 
@@ -33,8 +33,7 @@ public class KafkaAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnClass({ProducerConfig.class, ZkClient.class})
-    public KafkaProducerFactory producerFactory(KafkaConfig kafkaConfig) {
+    public KafkaProducerFactory producers(KafkaConfig kafkaConfig) {
         if (isEmpty(kafkaConfig.getProducers())) {
             return null;
         }

@@ -6,4 +6,7 @@ public class KafkaException extends RuntimeException {
         super(t);
     }
 
+    public KafkaException(String message) {
+        super(message);
+    }
 }

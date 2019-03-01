@@ -11,13 +11,18 @@ import org.chobit.kafka.role.Producer;
 import org.chobit.kafka.role.ZooKeeper;
 import org.chobit.kafka.serializer.StringSerializer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.chobit.kafka.role.ProducerType.sync;
 import static org.chobit.kafka.utils.Collections.isEmpty;
 import static org.chobit.kafka.utils.JsonUtils.fromJson;
 import static org.chobit.kafka.utils.ReflectUtils.newInstance;
+import static org.chobit.kafka.utils.StringUtils.isBlank;
+import static org.chobit.kafka.utils.StringUtils.uuid;
 
 final class KafkaConfigBuilder {
 
@@ -132,12 +137,17 @@ final class KafkaConfigBuilder {
         List<ProducerConfigWrapper> configs = new ArrayList<ProducerConfigWrapper>(2);
 
         for (Producer p : producers) {
-            Properties props = new Properties();
-            props.put("send.buffer.bytes", String.valueOf(p.getBufferSize()));
-            props.put("compression.codec", p.getCompressionCodec());
-            props.put("producer.type", p.getType());
 
-            if (sync == p.getType()) {
+            if (isBlank(p.getId())) {
+                p.setId(uuid());
+            }
+
+            Properties props = new Properties();
+            if (p.getBufferSize() > 0) {
+                props.put("send.buffer.bytes", String.valueOf(p.getBufferSize()));
+            }
+
+            if (null != p.getType() && sync == p.getType()) {
                 props.put("request.required.acks", String.valueOf(0));
             }
 
@@ -149,19 +159,21 @@ final class KafkaConfigBuilder {
             String brokers = obtainBrokers(zk);
             props.put("metadata.broker.list", brokers);
 
-            if (null == p.getSerializer()) {
-                throw new KafkaConfigException("Serializer class of producer is empty");
+            if (null != p.getSerializer()) {
+                props.put("serializer.class", p.getSerializer().getName());
             }
-            props.put("serializer.class", p.getSerializer());
             if (null != p.getKeySerializer()) {
-                props.put("key.serializer.class", p.getKeySerializer());
+                props.put("key.serializer.class", p.getKeySerializer().getName());
             }
             if (null == p.getPartitioner()) {
-                throw new KafkaConfigException("Partitioner class of producer is empty");
+                props.put("partitioner.class", p.getPartitioner().getName());
             }
-            props.put("partitioner.class", p.getPartitioner());
-            props.put("producer.type", p.getType());
-            props.put("compression.codec", p.getCompressionCodec());
+            if (null != p.getType()) {
+                props.put("producer.type", p.getType().name());
+            }
+            if (null != p.getCompressionCodec()) {
+                props.put("compression.codec", p.getCompressionCodec().name());
+            }
 
             if (null != p.getProperties()) {
                 props.putAll(p.getProperties());
