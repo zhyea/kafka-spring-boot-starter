@@ -4,7 +4,7 @@ spring-boot-starter-kafka82x是一个支持自动配置的springboot kafka组件
 
 工作中使用的springboot版本（1.5.4）不支持kafka0.8.2.x版本，所以才完成了这个组件。
 
-这个组件特点如下：
+组件特点如下：
 
 * 基于springboot1.5.4、kafka0.8.2版本开发
 * 实现了springboot自动配置
@@ -12,7 +12,7 @@ spring-boot-starter-kafka82x是一个支持自动配置的springboot kafka组件
 
 # 引入依赖
 
-这个组件依赖的spring和kafka都是比较老旧的版本，而且使用场景也比较有限，所以就没有上传到maven中心仓库。可以自行pull当前工程并**mvn install**到本地仓库。
+组件依赖的spring和kafka都是比较老旧的版本，而且使用场景也比较有限，所以就没有上传到maven中心仓库。可以自行pull当前工程并**mvn install**到本地仓库。
 
 在pom中添加依赖如下：
 
@@ -65,4 +65,3 @@ kafka 生产者的配置。
 
 写了一个简单的示例工程，放在了csdn。若有兴趣可以下载看一下。[点击此处]()进入下载页。
 
-无
