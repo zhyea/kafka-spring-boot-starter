@@ -105,5 +105,5 @@ kafka 生产者配置。
 
 # 其他  
 
-写了一个简单的示例工程，放在了csdn。若有兴趣可以下载看一下。[点击此处]()进入下载页。
+写了一个简单的示例工程，放在了csdn。若有兴趣可以下载看一下。[点击此处](https://download.csdn.net/download/tianxiexingyun/10992186)进入下载页。
 
