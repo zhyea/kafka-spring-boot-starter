@@ -21,16 +21,6 @@ public class Consumer {
 
     private List<Topic> topics;
 
-    private boolean autoCommitEnable = true;
-
-    private int autoCommitInterval;
-
-    private int rebalanceRetriesMax;
-
-    private int rebalanceBackoff;
-
-    private int queuedChunksMax;
-
     private Properties properties;
 
     public String getGroupId() {
@@ -79,46 +69,6 @@ public class Consumer {
 
     public void setTopics(List<Topic> topics) {
         this.topics = topics;
-    }
-
-    public boolean isAutoCommitEnable() {
-        return autoCommitEnable;
-    }
-
-    public void setAutoCommitEnable(boolean autoCommitEnable) {
-        this.autoCommitEnable = autoCommitEnable;
-    }
-
-    public int getAutoCommitInterval() {
-        return autoCommitInterval;
-    }
-
-    public void setAutoCommitInterval(int autoCommitInterval) {
-        this.autoCommitInterval = autoCommitInterval;
-    }
-
-    public int getRebalanceRetriesMax() {
-        return rebalanceRetriesMax;
-    }
-
-    public void setRebalanceRetriesMax(int rebalanceRetriesMax) {
-        this.rebalanceRetriesMax = rebalanceRetriesMax;
-    }
-
-    public int getRebalanceBackoff() {
-        return rebalanceBackoff;
-    }
-
-    public void setRebalanceBackoff(int rebalanceBackoff) {
-        this.rebalanceBackoff = rebalanceBackoff;
-    }
-
-    public int getQueuedChunksMax() {
-        return queuedChunksMax;
-    }
-
-    public void setQueuedChunksMax(int queuedChunksMax) {
-        this.queuedChunksMax = queuedChunksMax;
     }
 
     public Properties getProperties() {

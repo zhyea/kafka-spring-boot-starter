@@ -86,22 +86,6 @@ final class KafkaConfigBuilder {
 
             /* add consumer config */
             props.put("group.id", cc.getGroupId());
-            props.put("auto.commit.enable", String.valueOf(cc.isAutoCommitEnable()));
-            if (cc.getAutoCommitInterval() > 0) {
-                props.put("auto.commit.interval.ms", String.valueOf(cc.getAutoCommitInterval()));
-            }
-            if (cc.getRebalanceRetriesMax() > 0) {
-                props.put("rebalance.max.retries", String.valueOf(cc.getRebalanceRetriesMax()));
-            }
-            if (cc.getRebalanceBackoff() > 0) {
-                props.put("rebalance.backoff.ms", String.valueOf(cc.getRebalanceBackoff()));
-            }
-            if (cc.getQueuedChunksMax() > 0) {
-                props.put("queued.max.message.chunks", String.valueOf(cc.getQueuedChunksMax()));
-            }
-
-            /* add default config */
-            props.put("auto.offset.reset", "largest");
 
             if (null != cc.getProperties()) {
                 props.putAll(cc.getProperties());
@@ -171,10 +155,6 @@ final class KafkaConfigBuilder {
             if (null != p.getType()) {
                 props.put("producer.type", p.getType().name());
             }
-            if (null != p.getCompressionCodec()) {
-                props.put("compression.codec", p.getCompressionCodec().name());
-            }
-
             if (null != p.getProperties()) {
                 props.putAll(p.getProperties());
             }

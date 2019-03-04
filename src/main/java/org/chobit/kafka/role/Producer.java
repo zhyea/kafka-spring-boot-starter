@@ -15,8 +15,6 @@ public class Producer {
 
     private ProducerType type = ProducerType.sync;
 
-    private CompressionCodec compressionCodec = CompressionCodec.none;
-
     private Class<? extends Encoder> keySerializer;
 
     private Class<? extends Encoder> serializer = StringEncoder.class;
@@ -49,14 +47,6 @@ public class Producer {
 
     public void setType(ProducerType type) {
         this.type = type;
-    }
-
-    public CompressionCodec getCompressionCodec() {
-        return compressionCodec;
-    }
-
-    public void setCompressionCodec(CompressionCodec compressionCodec) {
-        this.compressionCodec = compressionCodec;
     }
 
     public Class<? extends Encoder> getKeySerializer() {
