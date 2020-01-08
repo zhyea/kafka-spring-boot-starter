@@ -1,0 +1,107 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.KafkaProperties",
+      "name": "kafka",
+      "type": "org.chobit.kafka.autoconfig.KafkaProperties"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Properties",
+      "name": "kafka.common.bootstrap_servers",
+      "description": "Kafka properties",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Properties",
+      "name": "kafka.common.max_poll_records",
+      "description": "Kafka properties",
+      "type": "java.lang.Integer",
+      "defaultValue": 10000
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Properties",
+      "name": "kafka.common.retry_backoff_ms",
+      "description": "Kafka properties",
+      "type": "java.lang.Integer",
+      "defaultValue": 10000
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Properties",
+      "name": "kafka.common.enable_auto_commit",
+      "description": "Kafka properties",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Properties",
+      "name": "kafka.common.auto_commit_interval_ms",
+      "description": "Kafka properties",
+      "type": "java.lang.Integer",
+      "defaultValue": 1000
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Properties",
+      "name": "kafka.common.session_timeout_ms",
+      "description": "Kafka properties",
+      "type": "java.lang.Integer",
+      "defaultValue": 15000
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Properties",
+      "name": "kafka.common.key_deserializer",
+      "description": "Kafka properties",
+      "type": "java.lang.Class",
+      "defaultValue": "org.apache.kafka.common.serialization.StringDeserializer"
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Properties",
+      "name": "kafka.common.value_deserializer",
+      "description": "Kafka properties",
+      "type": "java.lang.Class",
+      "defaultValue": "org.apache.kafka.common.serialization.StringDeserializer"
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Properties",
+      "name": "kafka.common.auto_offset_reset",
+      "description": "Kafka properties",
+      "type": "org.chobit.kafka.autoconfig.AutoOffset",
+      "defaultValue": "latest"
+    },
+    {
+      "name": "kafka.consumers",
+      "description": "Kafka properties",
+      "sourceType": "org.chobit.kafka.autoconfig.KafkaProperties",
+      "type": "java.util.List<org.chobit.kafka.autoconfig.Consumer>"
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Producer",
+      "name": "kafka.producer.bootstrap_servers",
+      "description": "Kafka properties",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Producer",
+      "name": "kafka.producer.key_serializer",
+      "description": "Kafka properties",
+      "type": "java.lang.Class",
+      "defaultValue": "org.apache.kafka.common.serialization.StringSerializer"
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Producer",
+      "name": "kafka.producer.value_serializer",
+      "description": "Kafka properties",
+      "type": "java.lang.Class",
+      "defaultValue": "org.apache.kafka.common.serialization.StringSerializer"
+    },
+    {
+      "sourceType": "org.chobit.kafka.autoconfig.Producer",
+      "name": "kafka.producer.enable",
+      "description": "Kafka properties",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    }
+  ]
+}

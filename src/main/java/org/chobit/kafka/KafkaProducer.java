@@ -1,52 +1,54 @@
 package org.chobit.kafka;
 
-import kafka.javaapi.producer.Producer;
-import kafka.producer.KeyedMessage;
+import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.chobit.kafka.exception.KafkaException;
+import org.springframework.beans.factory.DisposableBean;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class KafkaProducer<K, V> implements Shutdown {
+;
 
-    private final Producer producer;
+/**
+ * Kafka生产者工具类
+ *
+ * @author robin
+ */
+public final class KafkaProducer<K, V> implements Shutdown, DisposableBean {
+
+    private final Producer<K, V> producer;
+
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
-    public KafkaProducer(Producer producer) {
-        this.producer = producer;
+
+    public KafkaProducer(org.chobit.kafka.autoconfig.Producer producerConfig) {
+        producer = new org.apache.kafka.clients.producer.KafkaProducer<>(producerConfig.toMap());
         this.isRunning.set(true);
     }
 
-    public void send(String topic, K key, V data) {
-        KeyedMessage<K, V> msg = new KeyedMessage<K, V>(topic, key, data);
-        producer.send(msg);
+    public void send(String topic, K key, V value) {
+        this.send(topic, key, value, null);
     }
 
-    public void send(String topic, V data) {
-        KeyedMessage<K, V> msg = new KeyedMessage<K, V>(topic, null, data);
-        producer.send(msg);
+
+    public void send(String topic, V value) {
+        this.send(topic, null, value, null);
     }
 
-    public void send(String topic, K key, List<V> dataList) {
-        List<KeyedMessage<K, V>> msgList = new ArrayList<KeyedMessage<K, V>>();
-        for (V val : dataList) {
-            KeyedMessage<K, V> msg = new KeyedMessage<K, V>(topic, key, val);
-            msgList.add(msg);
-        }
-        producer.send(msgList);
+
+    public void send(String topic, V value, Callback callback) {
+        this.send(topic, null, value, callback);
     }
 
-    public void send(String topic, List<V> dataList) {
-        List<KeyedMessage<K, V>> msgList = new ArrayList<KeyedMessage<K, V>>();
-        for (V val : dataList) {
-            KeyedMessage<K, V> msg = new KeyedMessage<K, V>(topic, null, val);
-            msgList.add(msg);
-        }
-        producer.send(msgList);
+
+    public void send(String topic, K key, V value, Callback callback) {
+        ProducerRecord<K, V> record = new ProducerRecord<>(topic, key, value);
+        producer.send(record, callback);
     }
+
 
     @Override
     public void shutdown() {
@@ -67,5 +69,12 @@ public class KafkaProducer<K, V> implements Shutdown {
         } catch (Exception e) {
             throw new KafkaException(e);
         }
+    }
+
+
+    @Override
+    public void destroy() throws Exception {
+        awaitShutdown();
+        shutdown();
     }
 }

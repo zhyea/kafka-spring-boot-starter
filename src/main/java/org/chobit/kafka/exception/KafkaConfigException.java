@@ -1,21 +1,14 @@
 package org.chobit.kafka.exception;
 
+/**
+ * 自定义kafka配置异常类
+ *
+ * @author robin
+ */
 public class KafkaConfigException extends RuntimeException {
 
     public KafkaConfigException(String message) {
         super(message);
-    }
-
-    public KafkaConfigException(String message, Throwable t) {
-        super(message, t);
-    }
-
-    public KafkaConfigException(Throwable t) {
-        this("Kafka config error.", t);
-    }
-
-    public KafkaConfigException() {
-        this("Kafka config error.");
     }
 
 }

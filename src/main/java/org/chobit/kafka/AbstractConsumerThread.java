@@ -7,7 +7,12 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class AbstractConsumeThread implements Runnable {
+/**
+ * 抽象消费者线程，主要提供线程安全之类的辅助方法
+ *
+ * @author robin
+ */
+public abstract class AbstractConsumerThread implements Runnable {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
