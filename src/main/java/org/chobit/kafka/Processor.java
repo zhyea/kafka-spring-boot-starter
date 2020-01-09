@@ -12,10 +12,10 @@ public interface Processor<K, V> extends Shutdown {
     /**
      * 执行消息处理逻辑
      *
-     * @param record 消费的记录总数
+     * @param records 消费的记录总数
      * @return 是否处理成功
      */
-    boolean process(ConsumerRecords<K, V> record);
+    boolean process(ConsumerRecords<K, V> records);
 
 
     @Override
