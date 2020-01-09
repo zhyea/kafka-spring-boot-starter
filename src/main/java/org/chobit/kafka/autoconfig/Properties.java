@@ -16,7 +16,7 @@ import static org.chobit.kafka.utils.Strings.isNotBlank;
 public class Properties {
 
     /**
-     *
+     * kafka 连接信息
      */
     private String bootstrapServers;
     /**

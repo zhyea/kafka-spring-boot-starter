@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
+import static org.chobit.kafka.utils.Strings.isNotBlank;
 
 /**
  * 消费者配置
@@ -12,6 +14,11 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
  * @author robin
  */
 public class Consumer {
+
+    /**
+     * kafka 连接信息
+     */
+    private String bootstrapServers;
 
     private String groupId;
 
@@ -33,11 +40,21 @@ public class Consumer {
     public final Map<String, Object> toMap() {
         Map<String, Object> config = new HashMap<>(4);
 
+        if (isNotBlank(bootstrapServers)) {
+            config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        }
         config.put(GROUP_ID_CONFIG, groupId);
 
         return config;
     }
 
+    public String getBootstrapServers() {
+        return bootstrapServers;
+    }
+
+    public void setBootstrapServers(String bootstrapServers) {
+        this.bootstrapServers = bootstrapServers;
+    }
 
     public String getGroupId() {
         return groupId;
