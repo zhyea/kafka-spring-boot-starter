@@ -15,7 +15,7 @@ public interface Processor<K, V> extends Shutdown {
      * @param records 消费的记录总数
      * @return 是否处理成功
      */
-    boolean process(ConsumerRecords<K, V> records);
+    void process(ConsumerRecords<K, V> records);
 
 
     @Override
