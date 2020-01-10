@@ -58,11 +58,19 @@ public final class ConsumerWorker<K, V> extends AbstractConsumerThread implement
                 ConsumerRecords<K, V> records = consumer.poll(Duration.ofMillis(pollTimeoutMs));
                 // 如果无法读取数据，sleep一段时间，避免频繁请求
                 if (records.isEmpty()) {
-                    TimeUnit.MINUTES.sleep(5);
+                    TimeUnit.SECONDS.sleep(1L);
                 }
-                processor.process(records);
+                try {
+                    processor.process(records);
+                } catch (Throwable t) {
+                    awaitShutdown();
+                    shutdown();
+                    logger.error("Consumer of group:{} occurred error when processing messages", groupId, t);
+                    throw t;
+                }
             }
         } catch (Throwable t) {
+            logger.error("Consumer of group:{} run into error", groupId, t);
             throw new KafkaConsumerException(t);
         } finally {
             awaitShutdown();

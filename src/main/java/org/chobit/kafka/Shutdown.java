@@ -1,6 +1,6 @@
 package org.chobit.kafka;
 
-interface Shutdown {
+public interface Shutdown {
 
     void shutdown();
 
