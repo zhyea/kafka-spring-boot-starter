@@ -11,7 +11,7 @@ public abstract class Threads {
                                                          boolean isDaemon) {
         return new ThreadPoolExecutor(poolSize, poolSize,
                 0L, TimeUnit.MILLISECONDS,
-                new SynchronousQueue<Runnable>(), newThreadFactory(threadNamePattern, isDaemon));
+                new SynchronousQueue<Runnable>(), newThreadFactory(threadNamePattern, isDaemon), new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
 
