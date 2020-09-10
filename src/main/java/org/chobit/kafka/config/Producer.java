@@ -1,4 +1,4 @@
-package org.chobit.kafka.autoconfig;
+package org.chobit.kafka.config;
 
 
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -17,8 +17,6 @@ public class Producer {
 
     private boolean enable = true;
 
-    private String bootstrapServers;
-
     private Class<?> keySerializer = StringSerializer.class;
 
     private Class<?> valueSerializer = StringSerializer.class;
@@ -27,7 +25,6 @@ public class Producer {
     public final Map<String, Object> toMap() {
         Map<String, Object> config = new HashMap<>(8);
 
-        config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(KEY_SERIALIZER_CLASS_CONFIG, keySerializer.getName());
         config.put(VALUE_SERIALIZER_CLASS_CONFIG, valueSerializer.getName());
 
@@ -41,14 +38,6 @@ public class Producer {
 
     public void setEnable(boolean enable) {
         this.enable = enable;
-    }
-
-    public String getBootstrapServers() {
-        return bootstrapServers;
-    }
-
-    public void setBootstrapServers(String bootstrapServers) {
-        this.bootstrapServers = bootstrapServers;
     }
 
     public Class<?> getKeySerializer() {

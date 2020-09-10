@@ -1,23 +1,19 @@
-package org.chobit.kafka.autoconfig;
+package org.chobit.kafka.config;
 
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.lang.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
-import static org.chobit.kafka.utils.Strings.isNotBlank;
 
-/**
- * 基础配置
- *
- * @author robin
- */
-public class Properties {
+public class Common {
 
     /**
      * kafka 连接信息
      */
+    @NonNull
     private String bootstrapServers;
     /**
      * 控制单次调用call方法能够返回的记录数量，帮助控制在轮询里需要处理的数据量。
@@ -61,9 +57,8 @@ public class Properties {
     public final Map<String, Object> toMap() {
         Map<String, Object> config = new HashMap<>(8);
 
-        if (isNotBlank(bootstrapServers)) {
-            config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        }
+        config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
         config.put(ENABLE_AUTO_COMMIT_CONFIG, enableAutoCommit);
         if (maxPollRecords > 0) {
             config.put(MAX_POLL_RECORDS_CONFIG, maxPollRecords);
@@ -162,5 +157,6 @@ public class Properties {
     public void setRetryBackoffMs(long retryBackoffMs) {
         this.retryBackoffMs = retryBackoffMs;
     }
+
 
 }

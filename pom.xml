@@ -7,12 +7,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starters</artifactId>
-        <version>2.1.7.RELEASE</version>
+        <version>2.1.9.RELEASE</version>
     </parent>
 
     <groupId>org.chobit.kafka</groupId>
-    <artifactId>spring-boot-starter-kafka</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <artifactId>kafka-spring-boot-starter</artifactId>
+    <version>1.0</version>
 
     <properties>
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>

@@ -13,18 +13,17 @@ public interface Processor<K, V> extends Shutdown {
      * 执行消息处理逻辑
      *
      * @param records 消费的记录总数
-     * @return 是否处理成功
      */
     void process(ConsumerRecords<K, V> records);
 
 
     @Override
-    default void awaitShutdown() {
+    default void awaitShutdown() throws Exception {
     }
 
 
     @Override
-    default void shutdown() {
+    default void shutdown() throws Exception {
     }
 
 }

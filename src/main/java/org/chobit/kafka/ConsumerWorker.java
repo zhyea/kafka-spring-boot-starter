@@ -3,20 +3,26 @@ package org.chobit.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.chobit.kafka.autoconfig.Consumer;
+import org.chobit.kafka.config.Consumer;
 import org.chobit.kafka.exception.KafkaConsumerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Kafka topic 消费类
  *
  * @author robin
  */
-public final class ConsumerWorker<K, V> extends AbstractConsumerThread implements Shutdown {
+public final class ConsumerWorker<K, V> implements Runnable, Shutdown {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerWorker.class);
 
     private final KafkaConsumer<K, V> consumer;
 
@@ -30,10 +36,14 @@ public final class ConsumerWorker<K, V> extends AbstractConsumerThread implement
 
     private final long closeTimeoutMs;
 
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+
+    private final CountDownLatch startupLatch;
 
     public ConsumerWorker(Map<String, Object> config,
                           Consumer consumerConfig,
-                          Processor<K, V> processor) {
+                          Processor<K, V> processor,
+                          CountDownLatch latch) {
 
         config.putAll(consumerConfig.toMap());
 
@@ -45,16 +55,23 @@ public final class ConsumerWorker<K, V> extends AbstractConsumerThread implement
         this.closeTimeoutMs = consumerConfig.getCloseTimeoutMs();
 
         this.processor = processor;
+
+        this.startupLatch = latch;
     }
 
 
     @Override
     public void run() {
         try {
-            startupComplete();
-            consumer.subscribe(this.topics);
+            this.consumer.subscribe(this.topics);
 
-            while (isRunning()) {
+            this.isRunning.set(true);
+
+            this.startupLatch.countDown();
+
+            logger.info("Consumer group:{} has been started.", groupId);
+
+            while (isRunning.get()) {
                 ConsumerRecords<K, V> records = consumer.poll(Duration.ofMillis(pollTimeoutMs));
                 // 如果无法读取数据，sleep一段时间，避免频繁请求
                 if (records.isEmpty()) {
@@ -63,8 +80,8 @@ public final class ConsumerWorker<K, V> extends AbstractConsumerThread implement
                 try {
                     processor.process(records);
                 } catch (Throwable t) {
-                    awaitShutdown();
                     shutdown();
+                    awaitShutdown();
                     logger.error("Consumer of group:{} occurred error when processing messages", groupId, t);
                     throw t;
                 }
@@ -73,35 +90,38 @@ public final class ConsumerWorker<K, V> extends AbstractConsumerThread implement
             logger.error("Consumer of group:{} run into error", groupId, t);
             throw new KafkaConsumerException(t);
         } finally {
-            awaitShutdown();
+            if (null != consumer) {
+                consumer.close(Duration.ofMillis(closeTimeoutMs));
+            }
             shutdown();
+            awaitShutdown();
             logger.info("Consumer thread:{} has been shutdown.", Thread.currentThread().getName());
         }
 
-        logger.info("Consumer group:{} has been started.", groupId);
     }
 
 
     @Override
     public void shutdown() {
-        if (null != consumer) {
-            consumer.close(Duration.ofMillis(closeTimeoutMs));
-        }
+        isRunning.set(false);
         if (null != processor) {
-            processor.shutdown();
+            try {
+                processor.shutdown();
+            } catch (Exception e) {
+                logger.error("Processor for kafka consumer(group id:{}) shutdown error", groupId, e);
+            }
         }
-        super.shutdownComplete();
     }
 
 
     @Override
     public void awaitShutdown() {
-        super.awaitShutdown();
-        if (null != consumer) {
-            consumer.unsubscribe();
-        }
         if (null != processor) {
-            processor.awaitShutdown();
+            try {
+                processor.awaitShutdown();
+            } catch (Exception e) {
+                logger.error("Processor for kafka consumer(group id:{}) await shutdown error", groupId, e);
+            }
         }
     }
 

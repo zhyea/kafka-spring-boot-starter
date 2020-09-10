@@ -5,7 +5,7 @@ package org.chobit.kafka.utils;
  *
  * @author robin
  */
-public abstract class Strings {
+public final class Strings {
 
     public static boolean isBlank(String str) {
         int strLen;

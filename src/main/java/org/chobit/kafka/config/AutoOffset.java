@@ -1,4 +1,4 @@
-package org.chobit.kafka.autoconfig;
+package org.chobit.kafka.config;
 
 /**
  * 在无提交的offset时，consumer消费开始的位置

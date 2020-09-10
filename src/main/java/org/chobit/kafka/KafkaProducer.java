@@ -1,11 +1,13 @@
 package org.chobit.kafka;
 
 import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.chobit.kafka.config.Common;
+import org.chobit.kafka.config.Producer;
 import org.chobit.kafka.exception.KafkaException;
 import org.springframework.beans.factory.DisposableBean;
 
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -18,14 +20,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class KafkaProducer<K, V> implements Shutdown, DisposableBean {
 
-    private final Producer<K, V> producer;
+    private final org.apache.kafka.clients.producer.Producer producer;
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
 
-    public KafkaProducer(org.chobit.kafka.autoconfig.Producer producerConfig) {
-        producer = new org.apache.kafka.clients.producer.KafkaProducer<>(producerConfig.toMap());
+    public KafkaProducer(Producer producerConfig, Common commonConfig) {
+        Map<String, Object> cfg = commonConfig.toMap();
+        cfg.putAll(producerConfig.toMap());
+        producer = new org.apache.kafka.clients.producer.KafkaProducer<>(cfg);
         this.isRunning.set(true);
     }
 
@@ -74,7 +78,7 @@ public final class KafkaProducer<K, V> implements Shutdown, DisposableBean {
 
     @Override
     public void destroy() throws Exception {
-        awaitShutdown();
         shutdown();
+        awaitShutdown();
     }
 }

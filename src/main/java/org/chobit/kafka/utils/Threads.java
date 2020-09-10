@@ -5,7 +5,7 @@ package org.chobit.kafka.utils;
  *
  * @author robin
  */
-public abstract class Threads {
+public final class Threads {
 
 
     public static Thread newThread(Runnable runnable, String threadName, boolean isDaemon) {
