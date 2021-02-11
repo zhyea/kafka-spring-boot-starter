@@ -2,7 +2,7 @@ package org.chobit.kafka;
 
 public interface Shutdown {
 
-    void shutdown();
+    void shutdown() throws Exception;
 
-    void awaitShutdown();
+    void awaitShutdown() throws Exception;
 }

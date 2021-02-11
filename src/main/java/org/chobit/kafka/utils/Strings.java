@@ -1,9 +1,11 @@
 package org.chobit.kafka.utils;
 
-import java.util.UUID;
-
-public abstract class StringUtils {
-
+/**
+ * 字符串操作工具类
+ *
+ * @author robin
+ */
+public final class Strings {
 
     public static boolean isBlank(String str) {
         int strLen;
@@ -18,13 +20,11 @@ public abstract class StringUtils {
         return true;
     }
 
-
     public static boolean isNotBlank(String str) {
         return !isBlank(str);
     }
 
-    public static String uuid() {
-        return UUID.randomUUID().toString().replace("-", "");
+    private Strings() {
+        throw new UnsupportedOperationException("Private constructor, cannot be accessed.");
     }
-
 }

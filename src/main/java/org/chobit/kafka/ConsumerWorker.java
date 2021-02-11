@@ -1,123 +1,128 @@
 package org.chobit.kafka;
 
-import kafka.consumer.ConsumerIterator;
-import kafka.consumer.KafkaStream;
-import kafka.javaapi.consumer.ConsumerConnector;
-import kafka.serializer.Decoder;
-import org.chobit.kafka.autoconfig.ConsumerConfigWrapper;
-import org.chobit.kafka.exception.KafkaConsumeException;
-import org.chobit.kafka.role.Topic;
-import org.chobit.kafka.utils.Threads;
 
-import java.util.HashMap;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.chobit.kafka.config.Consumer;
+import org.chobit.kafka.exception.KafkaConsumerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Kafka topic 消费类
+ *
+ * @author robin
  */
-public class ConsumerWorker extends AbstractConsumeThread implements Shutdown {
+public final class ConsumerWorker<K, V> implements Runnable, Shutdown {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerWorker.class);
+
+    private final KafkaConsumer<K, V> consumer;
+
+    private final Processor<K, V> processor;
 
     private final String groupId;
-    private final ConsumerConnector consumer;
-    private final ExecutorService executorService;
-    private final HashMap<String, Integer> topicCountMap;
-    private final Decoder valSerializer;
-    private final Decoder keySerializer;
-    private final Processor processor;
 
-    public ConsumerWorker(ConsumerConfigWrapper configWrapper, Processor processor) {
-        this.groupId = configWrapper.getGroupId();
-        this.consumer = kafka.consumer.Consumer.createJavaConsumerConnector(configWrapper.getConfig());
-        String threadNamePattern = "Consumer-thread-for-topic-" + configWrapper.getGroupId() + "-%d";
-        int threadsNum = configWrapper.consumerThreadsNum();
-        this.executorService = Threads.newFixCachedThreadPool(threadsNum, threadNamePattern, false);
-        this.topicCountMap = new HashMap<String, Integer>(configWrapper.getTopics().size());
-        for (Topic t : configWrapper.getTopics()) {
-            this.topicCountMap.put(t.getName(), t.getThreadNum());
-        }
-        this.keySerializer = configWrapper.getKeySerializer();
-        this.valSerializer = configWrapper.getValueSerializer();
+    private final List<String> topics;
+
+    private final long pollTimeoutMs;
+
+    private final long closeTimeoutMs;
+
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+
+    private final CountDownLatch startupLatch;
+
+    public ConsumerWorker(Map<String, Object> config,
+                          Consumer consumerConfig,
+                          Processor<K, V> processor,
+                          CountDownLatch latch) {
+
+        config.putAll(consumerConfig.toMap());
+
+        this.consumer = new KafkaConsumer<>(config);
+
+        this.groupId = consumerConfig.getGroupId();
+        this.topics = consumerConfig.getTopics();
+        this.pollTimeoutMs = consumerConfig.getPollTimeoutMs();
+        this.closeTimeoutMs = consumerConfig.getCloseTimeoutMs();
+
         this.processor = processor;
+
+        this.startupLatch = latch;
     }
 
 
     @Override
     public void run() {
-        startupComplete();
+        try {
+            this.consumer.subscribe(this.topics);
 
-        Map<String, List<KafkaStream>> topicStreamMap =
-                consumer.createMessageStreams(topicCountMap, keySerializer, valSerializer);
+            this.isRunning.set(true);
 
-        for (Map.Entry<String, List<KafkaStream>> entry : topicStreamMap.entrySet()) {
-            for (final KafkaStream stream : entry.getValue()) {
-                ConsumerThread t = new ConsumerThread(entry.getKey(), stream, this.processor);
-                executorService.submit(t);
-                t.awaitStartup();
+            this.startupLatch.countDown();
+
+            logger.info("Consumer group:{} has been started.", groupId);
+
+            while (isRunning.get()) {
+                ConsumerRecords<K, V> records = consumer.poll(Duration.ofMillis(pollTimeoutMs));
+                // 如果无法读取数据，sleep一段时间，避免频繁请求
+                if (records.isEmpty()) {
+                    TimeUnit.SECONDS.sleep(1L);
+                }
+                try {
+                    processor.process(records);
+                } catch (Throwable t) {
+                    shutdown();
+                    awaitShutdown();
+                    logger.error("Consumer of group:{} occurred error when processing messages", groupId, t);
+                    throw t;
+                }
             }
+        } catch (Throwable t) {
+            logger.error("Consumer of group:{} run into error", groupId, t);
+            throw new KafkaConsumerException(t);
+        } finally {
+            if (null != consumer) {
+                consumer.close(Duration.ofMillis(closeTimeoutMs));
+            }
+            shutdown();
+            awaitShutdown();
+            logger.info("Consumer thread:{} has been shutdown.", Thread.currentThread().getName());
         }
 
-        logger.info("Consumer group:{} has been started.", groupId);
     }
 
 
+    @Override
     public void shutdown() {
-        if (null != consumer) consumer.shutdown();
-        if (null != executorService) executorService.shutdown();
-        super.shutdownComplete();
+        isRunning.set(false);
+        if (null != processor) {
+            try {
+                processor.shutdown();
+            } catch (Exception e) {
+                logger.error("Processor for kafka consumer(group id:{}) shutdown error", groupId, e);
+            }
+        }
     }
 
 
     @Override
     public void awaitShutdown() {
-        try {
-            if (null != executorService) executorService.awaitTermination(5, TimeUnit.MINUTES);
-            super.awaitShutdown();
-        } catch (InterruptedException e) {
-            throw new KafkaConsumeException("Kafka consumer shutdown failed.", e);
-        }
-    }
-
-
-    /**
-     * Kafka分区消费线程
-     */
-    private static class ConsumerThread extends AbstractConsumeThread {
-
-        private final String topic;
-        private final KafkaStream stream;
-        private final Processor processor;
-
-        ConsumerThread(String topic,
-                       KafkaStream stream,
-                       Processor processor) {
-            this.topic = topic;
-            this.stream = stream;
-            this.processor = processor;
-        }
-
-        @Override
-        public void run() {
-            startupComplete();
+        if (null != processor) {
             try {
-                ConsumerIterator itr = stream.iterator();
-                while (isRunning() && itr.hasNext()) {
-                    Object message = itr.next().message();
-                    processor.process(topic, message);
-                }
-            } catch (Throwable t) {
-                throw new KafkaConsumeException(t);
-            } finally {
-                processor.shutdown();
                 processor.awaitShutdown();
-                shutdownComplete();
-                logger.info("Consumer thread:{} has been shutdown", Thread.currentThread().getName());
+            } catch (Exception e) {
+                logger.error("Processor for kafka consumer(group id:{}) await shutdown error", groupId, e);
             }
         }
     }
-
 
 }

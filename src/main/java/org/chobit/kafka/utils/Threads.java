@@ -1,5 +1,11 @@
 package org.chobit.kafka.utils;
 
+/**
+ * 线程工具类
+ *
+ * @author robin
+ */
+public final class Threads {
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -22,20 +28,7 @@ public abstract class Threads {
     }
 
 
-    public static ThreadFactory newThreadFactory(final String threadNamePattern, final boolean isDaemon) {
-        return new ThreadFactory() {
-            SecurityManager s = System.getSecurityManager();
-            private final ThreadGroup group = (s != null) ? s.getThreadGroup() :
-                    Thread.currentThread().getThreadGroup();
-            private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(group, r, String.format(threadNamePattern, threadNumber.get()));
-                t.setDaemon(isDaemon);
-                return t;
-            }
-        };
+    private Threads() {
+        throw new UnsupportedOperationException("Private constructor, cannot be accessed.");
     }
-
 }
