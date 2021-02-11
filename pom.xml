@@ -7,21 +7,18 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starters</artifactId>
-        <version>2.1.9.RELEASE</version>
+        <version>2.3.8.RELEASE</version>
     </parent>
 
     <groupId>org.chobit.kafka</groupId>
     <artifactId>kafka-spring-boot-starter</artifactId>
-    <version>1.0</version>
+    <version>0.2</version>
 
     <properties>
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
-    <groupId>org.chobit.spring</groupId>
-    <artifactId>kafka-spring-boot-starter</artifactId>
-    <version>0.1-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
@@ -77,24 +74,7 @@
             <url>http://www.zhyea.com</url>
         </developer>
     </developers>
-        <dependency>
-            <groupId>org.apache.zookeeper</groupId>
-            <artifactId>zookeeper</artifactId>
-            <version>3.4.14</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>log4j</artifactId>
-                    <groupId>log4j</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>[2.12.1,)</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
+
 
     <build>
         <plugins>
@@ -173,9 +153,7 @@
                     <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
             </distributionManagement>
-
         </profile>
     </profiles>
-
 
 </project>

@@ -4,6 +4,7 @@ package org.chobit.kafka.config;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.chobit.kafka.ConsumerBeanProcessor;
+import org.chobit.kafka.KafkaProperties;
 import org.chobit.kafka.ProducerAgent;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;

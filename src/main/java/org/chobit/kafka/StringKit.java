@@ -1,11 +1,11 @@
-package org.chobit.kafka.utils;
+package org.chobit.kafka;
 
 /**
  * 字符串操作工具类
  *
  * @author robin
  */
-public final class Strings {
+final class StringKit {
 
     public static boolean isBlank(String str) {
         int strLen;
@@ -24,7 +24,7 @@ public final class Strings {
         return !isBlank(str);
     }
 
-    private Strings() {
+    private StringKit() {
         throw new UnsupportedOperationException("Private constructor, cannot be accessed.");
     }
 }

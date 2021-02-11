@@ -1,6 +1,8 @@
-package org.chobit.kafka.config;
+package org.chobit.kafka;
 
 
+import org.chobit.kafka.config.ConfigUnit;
+import org.chobit.kafka.config.Consumer;
 import org.chobit.kafka.exception.KafkaConfigException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -8,7 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.chobit.kafka.utils.Strings.isBlank;
+import static org.chobit.kafka.StringKit.isBlank;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 /**
@@ -57,7 +59,7 @@ public class KafkaProperties implements InitializingBean {
     }
 
     private void check(ConfigUnit config) {
-        if(isBlank(config.getId())){
+        if (isBlank(config.getId())) {
             throw new KafkaConfigException("Id of kafka config unit is necessary");
         }
         if (null == config.getCommon() || isBlank(config.getCommon().getBootstrapServers())) {

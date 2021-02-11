@@ -4,7 +4,6 @@ import org.chobit.kafka.config.Common;
 import org.chobit.kafka.config.ConfigUnit;
 import org.chobit.kafka.config.Consumer;
 import org.chobit.kafka.exception.KafkaConfigException;
-import org.chobit.kafka.utils.Threads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -90,30 +89,27 @@ public final class ConsumerBeanProcessor<K, V> implements Shutdown, SmartInitial
 
 
     public void startup() {
-        Threads.newThread(new Runnable() {
-            @Override
-            public void run() {
-                // 等待启动信号，若未接到启动信号则sleep一段时间
-                while (!startSignal.get()) {
+        Threads.newThread(() -> {
+            // 等待启动信号，若未接到启动信号则sleep一段时间
+            while (!startSignal.get()) {
 
-                    if (shutdownSignal.get()) {
-                        return;
-                    }
-
-                    if (refreshEventReceived) {
-                        logger.error("Cannot find processors: {}, Kafka Clients start failed.", expectProcessors);
-                        return;
-                    }
-
-                    try {
-                        TimeUnit.SECONDS.sleep(1L);
-                    } catch (InterruptedException e) {
-                        logger.error("Current thread was interrupted.", e);
-                    }
+                if (shutdownSignal.get()) {
+                    return;
                 }
 
-                startup0();
+                if (refreshEventReceived) {
+                    logger.error("Cannot find processors: {}, Kafka Clients start failed.", expectProcessors);
+                    return;
+                }
+
+                try {
+                    TimeUnit.SECONDS.sleep(1L);
+                } catch (InterruptedException e) {
+                    logger.error("Current thread was interrupted.", e);
+                }
             }
+
+            startup0();
         }, "Consumer-starter-auto-start-thread", false).start();
     }
 

@@ -3,22 +3,22 @@
   "groups": [
     {
       "name": "kafka",
-      "type": "org.chobit.kafka.config.KafkaProperties",
-      "sourceType": "org.chobit.kafka.config.KafkaProperties"
+      "type": "org.chobit.kafka.KafkaProperties",
+      "sourceType": "org.chobit.kafka.KafkaProperties"
     }
   ],
   "properties": [
     {
       "name": "kafka.units",
       "type": "java.util.List<org.chobit.kafka.config.ConfigUnit>",
-      "sourceType": "org.chobit.kafka.config.KafkaProperties",
+      "sourceType": "org.chobit.kafka.KafkaProperties",
       "sourceMethod": "getUnit()",
       "description": "Kafka properties"
     },
     {
       "name": "kafka.unit",
       "type": "org.chobit.kafka.config.ConfigUnit",
-      "sourceType": "org.chobit.kafka.config.KafkaProperties",
+      "sourceType": "org.chobit.kafka.KafkaProperties",
       "sourceMethod": "getUnit()",
       "description": "Kafka properties"
     },
