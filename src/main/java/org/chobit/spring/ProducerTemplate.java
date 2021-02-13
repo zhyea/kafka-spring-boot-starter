@@ -1,37 +1,47 @@
-package org.chobit.kafka;
+package org.chobit.spring;
 
 import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.chobit.kafka.config.Common;
-import org.chobit.kafka.config.Producer;
-import org.chobit.kafka.exception.KafkaException;
+import org.chobit.spring.config.ConfigUnit;
+import org.chobit.spring.exception.KafkaConfigException;
+import org.chobit.spring.exception.KafkaException;
 import org.springframework.beans.factory.DisposableBean;
 
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-;
-
 /**
- * Kafka生产者工具类
- *
  * @author robin
  */
-public final class KafkaProducer<K, V> implements Shutdown, DisposableBean {
+public class ProducerTemplate<K, V> implements Shutdown, DisposableBean {
 
-    private final org.apache.kafka.clients.producer.Producer producer;
 
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
+
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
+    private final Map<String, Producer<K, V>> producers = new HashMap<>(8);
 
-    public KafkaProducer(Producer producerConfig, Common commonConfig) {
-        Map<String, Object> cfg = commonConfig.toMap();
-        cfg.putAll(producerConfig.toMap());
-        producer = new org.apache.kafka.clients.producer.KafkaProducer<>(cfg);
-        this.isRunning.set(true);
+    private final Set<Producer<K, V>> set = new HashSet<>(8);
+
+
+    public ProducerTemplate(Collection<ConfigUnit> configs) {
+        for (ConfigUnit cfg : configs) {
+            Map<String, Object> map = cfg.getCommon().toMap();
+            map.putAll(cfg.getProducer().toMap());
+            Producer<K, V> producer = new KafkaProducer<>(map);
+
+            set.add(producer);
+
+            for (String t : cfg.topics()) {
+                producers.put(t, producer);
+            }
+        }
     }
+
 
     public void send(String topic, K key, V value) {
         this.send(topic, key, value, null);
@@ -50,15 +60,21 @@ public final class KafkaProducer<K, V> implements Shutdown, DisposableBean {
 
     public void send(String topic, K key, V value, Callback callback) {
         ProducerRecord<K, V> record = new ProducerRecord<>(topic, key, value);
+        Producer<K, V> producer = producers.get(topic);
+        if (null == producer) {
+            throw new KafkaConfigException("Cannot find producer for topic:" + topic);
+        }
         producer.send(record, callback);
     }
 
 
     @Override
-    public void shutdown() {
+    public void shutdown() throws Exception {
         if (isRunning.compareAndSet(true, false)) {
             try {
-                producer.close();
+                for (Producer<K, V> p : set) {
+                    p.close();
+                }
             } catch (Exception e) {
                 throw new KafkaException(e);
             }
@@ -66,8 +82,9 @@ public final class KafkaProducer<K, V> implements Shutdown, DisposableBean {
         }
     }
 
+
     @Override
-    public void awaitShutdown() {
+    public void awaitShutdown() throws Exception {
         try {
             shutdownLatch.await();
         } catch (Exception e) {

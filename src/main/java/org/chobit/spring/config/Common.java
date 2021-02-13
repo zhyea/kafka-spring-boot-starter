@@ -1,24 +1,22 @@
-package org.chobit.kafka.config;
+package org.chobit.spring.config;
 
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.lang.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 
+/**
+ * @author robin
+ */
 public class Common {
 
-    /**
-     * kafka 连接信息
-     */
-    @NonNull
-    private String bootstrapServers;
     /**
      * 控制单次调用call方法能够返回的记录数量，帮助控制在轮询里需要处理的数据量。
      */
     private int maxPollRecords = 10000;
+
     /**
      * 指定了消费者是否自动提交offset，默认值是true，
      * <p>
@@ -26,28 +24,24 @@ public class Common {
      * 如果设置为true，可以通过设置 auto.commit.interval.ms属性来控制提交的频率
      */
     private boolean enableAutoCommit = true;
+
     /**
      * 提交offset的频率
      */
     private int autoCommitIntervalMs = 1000;
+
     /**
      * 该属性指定了当消费者被认为已经挂掉之前可以与服务器断开连接的时间。
      * <p>
      * 默认是3s，消费者在3s之内没有再次向服务器发送心跳，那么将会被认为已经死亡。此时，协调器将会出发再均衡，把它的分区分配给其他的消费者
      */
     private int sessionTimeoutMs = 15000;
+
     /**
      * 获取topic元数据失败重试时等待时间
      */
     private long retryBackoffMs = 1000;
-    /**
-     *
-     */
-    private Class<?> keyDeserializer = StringDeserializer.class;
-    /**
-     *
-     */
-    private Class<?> valueDeserializer = StringDeserializer.class;
+
     /**
      * 在无提交的offset时，consumer消费开始的位置
      */
@@ -56,8 +50,6 @@ public class Common {
 
     public final Map<String, Object> toMap() {
         Map<String, Object> config = new HashMap<>(8);
-
-        config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
         config.put(ENABLE_AUTO_COMMIT_CONFIG, enableAutoCommit);
         if (maxPollRecords > 0) {
@@ -85,14 +77,6 @@ public class Common {
         return config;
     }
 
-
-    public String getBootstrapServers() {
-        return bootstrapServers;
-    }
-
-    public void setBootstrapServers(String bootstrapServers) {
-        this.bootstrapServers = bootstrapServers;
-    }
 
     public int getMaxPollRecords() {
         return maxPollRecords;

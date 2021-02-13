@@ -1,4 +1,4 @@
-package org.chobit.kafka;
+package org.chobit.spring;
 
 /**
  * 线程工具类

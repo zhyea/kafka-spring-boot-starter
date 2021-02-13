@@ -1,10 +1,10 @@
-package org.chobit.kafka;
+package org.chobit.spring;
 
 
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.chobit.kafka.config.Consumer;
-import org.chobit.kafka.exception.KafkaConsumerException;
+import org.chobit.spring.config.Consumer;
+import org.chobit.spring.exception.KafkaConsumerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

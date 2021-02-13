@@ -1,4 +1,4 @@
-package org.chobit.kafka.exception;
+package org.chobit.spring.exception;
 
 /**
  * 自定义kafka消费异常类

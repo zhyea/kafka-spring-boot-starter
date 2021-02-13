@@ -1,4 +1,4 @@
-package org.chobit.kafka;
+package org.chobit.spring;
 
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 
@@ -17,11 +17,22 @@ public interface Processor<K, V> extends Shutdown {
     void process(ConsumerRecords<K, V> records);
 
 
+    /**
+     * 等待完全关闭
+     *
+     * @throws Exception
+     */
     @Override
     default void awaitShutdown() throws Exception {
+        //nothing to do
     }
 
 
+    /**
+     * 执行关闭
+     *
+     * @throws Exception
+     */
     @Override
     default void shutdown() throws Exception {
     }

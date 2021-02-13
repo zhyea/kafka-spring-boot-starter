@@ -1,9 +1,9 @@
-package org.chobit.kafka;
+package org.chobit.spring;
 
-import org.chobit.kafka.config.Common;
-import org.chobit.kafka.config.ConfigUnit;
-import org.chobit.kafka.config.Consumer;
-import org.chobit.kafka.exception.KafkaConfigException;
+import org.chobit.spring.config.Common;
+import org.chobit.spring.config.ConfigUnit;
+import org.chobit.spring.config.Consumer;
+import org.chobit.spring.exception.KafkaConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -59,14 +59,14 @@ public final class ConsumerBeanProcessor<K, V> implements Shutdown, SmartInitial
     private boolean refreshEventReceived = false;
 
 
-    public ConsumerBeanProcessor(List<ConfigUnit> configs) {
+    public ConsumerBeanProcessor(Collection<ConfigUnit> configs) {
 
         consumers = new HashMap<>(16);
 
         configs.stream()
-                .filter(e -> null != e.getConsumers())
+                .filter(e -> null != e.getConsumer())
                 .forEach(
-                        e -> e.getConsumers()
+                        e -> e.getConsumer()
                                 .forEach(c -> consumers.put(c, e.getCommon()))
                 );
 
