@@ -25,8 +25,6 @@ kafka:
     consumer:
       processor: org.chobit.spring.component.MyProcessor
       count: 3
-    producer:
-      enable: false
 ```
 
 启用生产者需将对应的**producer.enable**选项设置为true。使用时可以直接通过`@Autowired`注解获取`org.chobit.kafka.KafkaProducer`实例。
