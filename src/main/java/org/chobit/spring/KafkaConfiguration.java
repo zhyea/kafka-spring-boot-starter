@@ -3,12 +3,18 @@ package org.chobit.spring;
 
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.chobit.spring.config.ConfigUnit;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Role;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -32,14 +38,42 @@ public class KafkaConfiguration {
     @ConditionalOnClass(KafkaConsumer.class)
     @Bean
     public ConsumerBeanProcessor<?, ?> consumerProcessor() {
-        return new ConsumerBeanProcessor<>(properties.configs());
+        Map<String, Object> cfg = null;
+        if (null != properties.getCommon()) {
+            cfg = properties.getCommon().getConsumer();
+        }
+
+        Collection<ConfigUnit> coll = properties.configs().stream()
+                .filter(e -> null != e.getConsumer())
+                .collect(Collectors.toSet());
+        return new ConsumerBeanProcessor<>(cfg, coll);
     }
 
 
     @ConditionalOnClass(KafkaProducer.class)
     @Bean
-    public ProducerTemplate producer() {
-        return new ProducerTemplate(properties.configs());
+    public ProducerTemplate<Object, Object> producer() {
+        Map<String, Object> pCfg = null;
+        if (null != properties.getCommon()) {
+            pCfg = properties.getCommon().getProducer();
+        }
+        return new ProducerTemplate<>(pCfg, properties.configs());
+    }
+
+
+    @ConditionalOnClass(KafkaProducer.class)
+    @Bean
+    public StringProducerTemplate stringProducer() {
+        Map<String, Object> pCfg = null;
+        if (null != properties.getCommon()) {
+            pCfg = properties.getCommon().getProducer();
+        }
+
+        Collection<ConfigUnit> coll = properties.configs().stream()
+                .filter(e -> e.getKeyDeserializer().equals(StringDeserializer.class) && e.getValueDeserializer().equals(StringDeserializer.class))
+                .collect(Collectors.toSet());
+
+        return new StringProducerTemplate(pCfg, coll);
     }
 
 }

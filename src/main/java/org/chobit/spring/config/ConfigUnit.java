@@ -2,9 +2,15 @@ package org.chobit.spring.config;
 
 import org.apache.kafka.common.serialization.StringDeserializer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 
 /**
+ * 配置单元，标识一组相同服务器，可以采用近似处理逻辑的kafka日志集合
+ *
  * @author robin
  */
 public class ConfigUnit {
@@ -44,6 +50,72 @@ public class ConfigUnit {
      */
     private Producer producer;
 
+    /**
+     * 消费者配置信息
+     *
+     * @return 消费者配置
+     */
+    public Map<String, Object> consumerConfig() {
+        Map<String, Object> config = initConfig();
+
+        if (null != consumer) {
+            if (null != consumer.getAutoOffsetReset()) {
+                config.put(AUTO_OFFSET_RESET_CONFIG, consumer.getAutoOffsetReset().name());
+            }
+            config.put(ENABLE_AUTO_COMMIT_CONFIG, consumer.isEnableAutoCommit());
+            if (consumer.getMaxPollRecords() > 0) {
+                config.put(MAX_POLL_RECORDS_CONFIG, consumer.getMaxPollRecords());
+            }
+            if (consumer.getAutoCommitIntervalMs() > 0) {
+                config.put(AUTO_COMMIT_INTERVAL_MS_CONFIG, consumer.getAutoCommitIntervalMs());
+            }
+            if (consumer.getSessionTimeoutMs() > 0) {
+                config.put(SESSION_TIMEOUT_MS_CONFIG, consumer.getSessionTimeoutMs());
+            }
+            if (consumer.getRetryBackoffMs() > 0) {
+                config.put(RETRY_BACKOFF_MS_CONFIG, consumer.getRetryBackoffMs());
+            }
+            if (null != consumer.getProps()) {
+                config.putAll(consumer.getProps());
+            }
+        }
+
+        return config;
+    }
+
+    /**
+     * 生产者配置信息
+     *
+     * @return 生产者配置
+     */
+    public Map<String, Object> producerConfig() {
+
+        Map<String, Object> config = initConfig();
+        if (null != producer && null != producer.getProps()) {
+            config.putAll(producer.getProps());
+        }
+        return config;
+    }
+
+    /**
+     * 配置初始化
+     *
+     * @return 初始化后的配置
+     */
+    private Map<String, Object> initConfig() {
+        Map<String, Object> config = new HashMap<>(8);
+
+        config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
+        if (null != keyDeserializer) {
+            config.put(KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer);
+        }
+
+        if (null != valueDeserializer) {
+            config.put(VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer);
+        }
+        return config;
+    }
 
     public String getGroupId() {
         return groupId;
@@ -73,11 +145,31 @@ public class ConfigUnit {
         this.consumer = consumer;
     }
 
+    public Consumer getConsumer() {
+        return consumer;
+    }
+
     public Producer getProducer() {
         return producer;
     }
 
     public void setProducer(Producer producer) {
         this.producer = producer;
+    }
+
+    public Class<?> getKeyDeserializer() {
+        return keyDeserializer;
+    }
+
+    public void setKeyDeserializer(Class<?> keyDeserializer) {
+        this.keyDeserializer = keyDeserializer;
+    }
+
+    public Class<?> getValueDeserializer() {
+        return valueDeserializer;
+    }
+
+    public void setValueDeserializer(Class<?> valueDeserializer) {
+        this.valueDeserializer = valueDeserializer;
     }
 }

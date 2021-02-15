@@ -10,14 +10,14 @@ public interface Shutdown {
     /**
      * 执行shutdown
      *
-     * @throws Exception
+     * @throws Exception 异常
      */
     void shutdown() throws Exception;
 
     /**
      * 等待完全关闭
      *
-     * @throws Exception
+     * @throws Exception 异常
      */
     void awaitShutdown() throws Exception;
 }

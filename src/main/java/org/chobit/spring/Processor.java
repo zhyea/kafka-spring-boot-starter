@@ -20,7 +20,7 @@ public interface Processor<K, V> extends Shutdown {
     /**
      * 等待完全关闭
      *
-     * @throws Exception
+     * @throws Exception 异常
      */
     @Override
     default void awaitShutdown() throws Exception {
@@ -31,7 +31,7 @@ public interface Processor<K, V> extends Shutdown {
     /**
      * 执行关闭
      *
-     * @throws Exception
+     * @throws Exception 异常
      */
     @Override
     default void shutdown() throws Exception {

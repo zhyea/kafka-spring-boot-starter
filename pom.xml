@@ -4,9 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.chobit.kafka</groupId>
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>9</version>
+    </parent>
+
+    <groupId>org.chobit.spring</groupId>
     <artifactId>kafka-spring-boot-starter</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.0</version>
+    <packaging>jar</packaging>
 
     <properties>
         <springboot.version>2.3.8.RELEASE</springboot.version>
@@ -24,9 +31,8 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure-processor</artifactId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
             <version>${springboot.version}</version>
-            <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -36,27 +42,6 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <scm>
-        <connection>scm:git:https://github.com/zhyea/spring-boot-starter-kafka.git</connection>
-        <developerConnection>scm:git:https://github.com/zhyea/spring-boot-starter-kafka.git</developerConnection>
-        <url>https://github.com/zhyea/spring-boot-starter-kafka</url>
-    </scm>
-
-    <licenses>
-        <license>
-            <name>The Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <name>robin</name>
-            <email>robin@zhyea.com</email>
-            <url>http://www.zhyea.com</url>
-        </developer>
-    </developers>
 
     <build>
         <plugins>
@@ -102,40 +87,26 @@
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <id>release</id>
+    <scm>
+        <connection>scm:git:https://github.com/zhyea/spring-boot-starter-kafka.git</connection>
+        <developerConnection>scm:git:https://github.com/zhyea/spring-boot-starter-kafka.git</developerConnection>
+        <url>https://github.com/zhyea/spring-boot-starter-kafka</url>
+    </scm>
 
-            <build>
-                <plugins>
-                    <!-- GPG -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
 
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>oss</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-                </snapshotRepository>
-                <repository>
-                    <id>oss</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
-        </profile>
-    </profiles>
+    <developers>
+        <developer>
+            <name>robin</name>
+            <email>robin@zhyea.com</email>
+            <url>http://www.zhyea.com</url>
+        </developer>
+    </developers>
+
 
 </project>

@@ -1,13 +1,11 @@
 package org.chobit.spring;
 
-import org.chobit.spring.config.Common;
 import org.chobit.spring.config.ConfigUnit;
 import org.chobit.spring.config.Consumer;
 import org.chobit.spring.exception.KafkaConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -36,50 +34,72 @@ public final class ConsumerBeanProcessor<K, V> implements Shutdown, SmartInitial
 
     private final Logger logger = LoggerFactory.getLogger(ConsumerBeanProcessor.class);
 
+    /**
+     * 消费线程执行者
+     */
     private final List<ConsumerWorker<K, V>> workers;
 
-    private final Map<Consumer, Common> consumers;
+    /**
+     * 通用消费配置
+     */
+    private final Map<String, Object> commonProps;
 
+    /**
+     * 配置集合
+     */
+    private final Collection<ConfigUnit> configs;
+
+    /**
+     * 消息处理器集合
+     */
     private final Map<String, Processor<K, V>> processors;
 
+    /**
+     * 并发计数器
+     */
     private final CountDownLatch startupLatch;
-
 
     /**
      * 需要使用的Processor实现类名称（类名或Qualifier名称集合）
      */
     private final Set<String> expectProcessors;
 
+    /**
+     * Consumer服务启动标识
+     */
     private final AtomicBoolean startSignal = new AtomicBoolean(false);
 
+    /**
+     * Consumer服务关闭标识
+     */
     private final AtomicBoolean shutdownSignal = new AtomicBoolean(false);
 
-    private BeanFactory beanFactory;
-
+    /**
+     * 容器初始化标记
+     */
     private boolean refreshEventReceived = false;
 
+    /**
+     * 构造器
+     *
+     * @param commonProps 通用属性
+     * @param configs     配置信息集合
+     */
+    public ConsumerBeanProcessor(Map<String, Object> commonProps,
+                                 Collection<ConfigUnit> configs) {
+        this.commonProps = commonProps;
+        this.configs = configs;
 
-    public ConsumerBeanProcessor(Collection<ConfigUnit> configs) {
+        int totalConsumers = configs.size();
 
-        consumers = new HashMap<>(16);
-
-        configs.stream()
-                .filter(e -> null != e.getConsumer())
-                .forEach(
-                        e -> e.getConsumer()
-                                .forEach(c -> consumers.put(c, e.getCommon()))
-                );
-
-        int totalConsumers = consumers.size();
-
-        int totalWorkers = consumers.keySet().stream().mapToInt(Consumer::getCount).sum();
+        int totalWorkers = configs.stream().mapToInt(e -> e.getConsumer().getCount()).sum();
 
         this.workers = new ArrayList<>(totalWorkers);
         this.processors = new ConcurrentHashMap<>(totalConsumers);
         this.expectProcessors = new HashSet<>(4);
 
-        for (Consumer c : consumers.keySet()) {
-            expectProcessors.add(c.getProcessor());
+        for (ConfigUnit c : configs) {
+            expectProcessors.add(c.getConsumer().getProcessor());
         }
 
         this.startupLatch = new CountDownLatch(totalWorkers);
@@ -120,17 +140,23 @@ public final class ConsumerBeanProcessor<K, V> implements Shutdown, SmartInitial
     private void startup0() {
         int idx = 0;
         // 构建不同Group的ConsumerWorker实例
-        for (Map.Entry<Consumer, Common> entry : consumers.entrySet()) {
-            Consumer consumer = entry.getKey();
-            Processor<K, V> p = processors.get(entry.getKey().getProcessor());
+        for (ConfigUnit cfg : configs) {
+            Consumer consumer = cfg.getConsumer();
+            Processor<K, V> p = processors.get(cfg.getConsumer().getProcessor());
             if (null == p) {
-                throw new KafkaConfigException("Cannot find any bean for Processor:" + consumer.getProcessor() + " in consumer group:" + consumer.getGroupId());
+                throw new KafkaConfigException("Cannot find any bean for Processor:" + consumer.getProcessor() + " in consumer group:" + cfg.getGroupId());
             }
 
-            Common config = entry.getValue();
+            // 获取消费配置信息
+            Map<String, Object> props = new HashMap<>(8);
+            if (null != this.commonProps) {
+                props.putAll(commonProps);
+            }
+            props.putAll(cfg.consumerConfig());
+
             // 为同一个group创建多个ConsumerWorker实例
             for (int i = 0; i < consumer.getCount(); i++) {
-                ConsumerWorker<K, V> worker = new ConsumerWorker<>(config.toMap(), consumer, p, startupLatch);
+                ConsumerWorker<K, V> worker = new ConsumerWorker<>(props, consumer, p, cfg.getGroupId(), cfg.getTopics(), startupLatch);
                 if (shutdownSignal.get()) {
                     startupLatch.countDown();
                 } else {
@@ -138,6 +164,7 @@ public final class ConsumerBeanProcessor<K, V> implements Shutdown, SmartInitial
                     Threads.newThread(worker, "Consume-worker-thread-" + idx++, false).start();
                 }
             }
+            // continue
         }
 
 
@@ -245,7 +272,6 @@ public final class ConsumerBeanProcessor<K, V> implements Shutdown, SmartInitial
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.beanFactory = applicationContext;
         if (applicationContext instanceof ConfigurableApplicationContext) {
             ((ConfigurableApplicationContext) applicationContext).addApplicationListener(new ContextRefreshListener());
         }

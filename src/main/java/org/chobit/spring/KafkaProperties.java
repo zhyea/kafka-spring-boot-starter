@@ -9,11 +9,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.chobit.spring.StringKit.isBlank;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 /**
  * Kafka配置参数管理类
@@ -23,10 +21,14 @@ import static org.springframework.util.CollectionUtils.isEmpty;
 @ConfigurationProperties(prefix = "kafka")
 public class KafkaProperties implements InitializingBean {
 
-
+    /**
+     * 一些通用配置
+     */
     private Common common;
 
-
+    /**
+     * 节点配置
+     */
     private Map<String, ConfigUnit> config;
 
 
@@ -38,14 +40,27 @@ public class KafkaProperties implements InitializingBean {
         this.config = config;
     }
 
+    public Common getCommon() {
+        return common;
+    }
+
+    public void setCommon(Common common) {
+        this.common = common;
+    }
+
     public Collection<ConfigUnit> configs() {
         return this.config.values();
     }
 
+    /**
+     * 在配置信息注入完成后执行检查
+     *
+     * @throws Exception 异常
+     */
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (null == this.config) {
-            this.config = new HashMap<>(8);
+        if (null == this.config || this.config.isEmpty()) {
+            throw new KafkaConfigException("Invalid kafka config");
         }
         for (Map.Entry<String, ConfigUnit> ele : this.config.entrySet()) {
             String groupId = ele.getKey();
@@ -59,21 +74,18 @@ public class KafkaProperties implements InitializingBean {
         if (isBlank(config.getGroupId())) {
             throw new KafkaConfigException("Id of kafka config unit is necessary");
         }
-        if (null == config.getCommon() || isBlank(config.getCommon().getBootstrapServers())) {
-            throw new KafkaConfigException("Cannot find valid bootstrap-servers for " + config.getGroupId());
+        if (isBlank(config.getBootstrapServers())) {
+            throw new KafkaConfigException("Bootstrap servers of kafka config " + config.getGroupId() + " is empty");
+        }
+        if (null == config.getTopics() || config.getTopics().isEmpty()) {
+            throw new KafkaConfigException("Topics of kafka config " + config.getGroupId() + " is empty");
         }
         if (null != config.getConsumer()) {
-            for (Consumer c : config.getConsumer()) {
-                if (isBlank(c.getGroupId())) {
-                    throw new KafkaConfigException("Consumer group-id cannot be null.");
-                }
-                if (isBlank(c.getProcessor())) {
-                    throw new KafkaConfigException("Processor for consumer group:" + c.getGroupId() + " cannot be null.");
-                }
-                if (isEmpty(c.getTopics())) {
-                    throw new KafkaConfigException("Topics for consumer group:" + c.getGroupId() + " cannot be empty.");
-                }
+            Consumer c = config.getConsumer();
+            if (isBlank(c.getProcessor())) {
+                throw new KafkaConfigException("Processor for consumer group:" + config.getGroupId() + " cannot be null.");
             }
         }
     }
 }
+

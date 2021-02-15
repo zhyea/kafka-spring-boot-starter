@@ -16,43 +16,78 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Kafka topic 消费类
+ * Kafka topic消费执行者
  *
  * @author robin
  */
 public final class ConsumerWorker<K, V> implements Runnable, Shutdown {
 
+
     private static final Logger logger = LoggerFactory.getLogger(ConsumerWorker.class);
 
+    /**
+     * Kafka消费者
+     */
     private final KafkaConsumer<K, V> consumer;
 
+    /**
+     * Kafka消息处理器，承担了消息处理逻辑
+     */
     private final Processor<K, V> processor;
 
+    /**
+     * 消费组ID
+     */
     private final String groupId;
 
+    /**
+     * Kafka topics
+     */
     private final List<String> topics;
 
+    /**
+     * 消费poll等待时长
+     */
     private final long pollTimeoutMs;
 
+    /**
+     * 消费close等待时长
+     */
     private final long closeTimeoutMs;
 
+    /**
+     * 消费运行标识符
+     */
     private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
+    /**
+     * 并发计数器
+     */
     private final CountDownLatch startupLatch;
 
-    public ConsumerWorker(Map<String, Object> config,
-                          Consumer consumerConfig,
+    /**
+     * 构造器
+     *
+     * @param props       消费配置
+     * @param consumerCfg 消费者配置
+     * @param processor   处理器
+     * @param groupId     消费组ID
+     * @param topics      消费的topic
+     * @param latch       计数器
+     */
+    public ConsumerWorker(Map<String, Object> props,
+                          Consumer consumerCfg,
                           Processor<K, V> processor,
+                          String groupId,
+                          List<String> topics,
                           CountDownLatch latch) {
 
-        config.putAll(consumerConfig.toMap());
+        this.consumer = new KafkaConsumer<>(props);
 
-        this.consumer = new KafkaConsumer<>(config);
-
-        this.groupId = consumerConfig.getGroupId();
-        this.topics = consumerConfig.getTopics();
-        this.pollTimeoutMs = consumerConfig.getPollTimeoutMs();
-        this.closeTimeoutMs = consumerConfig.getCloseTimeoutMs();
+        this.groupId = groupId;
+        this.topics = topics;
+        this.pollTimeoutMs = consumerCfg.getPollTimeoutMs();
+        this.closeTimeoutMs = consumerCfg.getCloseTimeoutMs();
 
         this.processor = processor;
 
@@ -97,7 +132,6 @@ public final class ConsumerWorker<K, V> implements Runnable, Shutdown {
             awaitShutdown();
             logger.info("Consumer thread:{} has been shutdown.", Thread.currentThread().getName());
         }
-
     }
 
 
