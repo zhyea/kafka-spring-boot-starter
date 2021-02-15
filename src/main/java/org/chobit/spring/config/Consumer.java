@@ -1,5 +1,8 @@
 package org.chobit.spring.config;
 
+import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,6 +69,16 @@ public class Consumer {
      * 获取topic元数据失败重试时等待时间
      */
     private long retryBackoffMs = 1000;
+
+    /**
+     * key反序列化类
+     */
+    private Class<? extends Deserializer<?>> keyDeserializer = StringDeserializer.class;
+
+    /**
+     * value反序列化类
+     */
+    private Class<? extends Deserializer<?>> valueDeserializer = StringDeserializer.class;
 
     /**
      * 消费者配置信息
@@ -150,6 +163,22 @@ public class Consumer {
 
     public void setRetryBackoffMs(long retryBackoffMs) {
         this.retryBackoffMs = retryBackoffMs;
+    }
+
+    public Class<? extends Deserializer<?>> getKeyDeserializer() {
+        return keyDeserializer;
+    }
+
+    public void setKeyDeserializer(Class<? extends Deserializer<?>> keyDeserializer) {
+        this.keyDeserializer = keyDeserializer;
+    }
+
+    public Class<? extends Deserializer<?>> getValueDeserializer() {
+        return valueDeserializer;
+    }
+
+    public void setValueDeserializer(Class<? extends Deserializer<?>> valueDeserializer) {
+        this.valueDeserializer = valueDeserializer;
     }
 
     public Map<String, Object> getProps() {

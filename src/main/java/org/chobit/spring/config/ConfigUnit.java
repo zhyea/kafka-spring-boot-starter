@@ -1,12 +1,15 @@
 package org.chobit.spring.config;
 
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
+import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 
 /**
  * 配置单元，标识一组相同服务器，可以采用近似处理逻辑的kafka日志集合
@@ -31,16 +34,6 @@ public class ConfigUnit {
     private List<String> topics;
 
     /**
-     * key序列化类
-     */
-    private Class<?> keyDeserializer = StringDeserializer.class;
-
-    /**
-     * value序列化类
-     */
-    private Class<?> valueDeserializer = StringDeserializer.class;
-
-    /**
      * 消费者配置
      */
     private Consumer consumer;
@@ -56,7 +49,22 @@ public class ConfigUnit {
      * @return 消费者配置
      */
     public Map<String, Object> consumerConfig() {
-        Map<String, Object> config = initConfig();
+
+        Map<String, Object> config = new HashMap<>(8);
+
+        config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
+        if (null != consumer && null != consumer.getKeyDeserializer()) {
+            config.put(KEY_DESERIALIZER_CLASS_CONFIG, consumer.getKeyDeserializer());
+        } else {
+            config.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        }
+
+        if (null != consumer && null != consumer.getValueDeserializer()) {
+            config.put(VALUE_DESERIALIZER_CLASS_CONFIG, consumer.getValueDeserializer());
+        } else {
+            config.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        }
 
         if (null != consumer) {
             if (null != consumer.getAutoOffsetReset()) {
@@ -90,32 +98,28 @@ public class ConfigUnit {
      */
     public Map<String, Object> producerConfig() {
 
-        Map<String, Object> config = initConfig();
+        Map<String, Object> config = new HashMap<>(8);
+
+        config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
+        if (null != producer && null != producer.getKeySerializer()) {
+            config.put(KEY_SERIALIZER_CLASS_CONFIG, consumer.getKeyDeserializer());
+        } else {
+            config.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        }
+
+        if (null != producer && null != producer.getValueSerializer()) {
+            config.put(VALUE_SERIALIZER_CLASS_CONFIG, consumer.getValueDeserializer());
+        } else {
+            config.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        }
+
         if (null != producer && null != producer.getProps()) {
             config.putAll(producer.getProps());
         }
         return config;
     }
 
-    /**
-     * 配置初始化
-     *
-     * @return 初始化后的配置
-     */
-    private Map<String, Object> initConfig() {
-        Map<String, Object> config = new HashMap<>(8);
-
-        config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-
-        if (null != keyDeserializer) {
-            config.put(KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer);
-        }
-
-        if (null != valueDeserializer) {
-            config.put(VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer);
-        }
-        return config;
-    }
 
     public String getGroupId() {
         return groupId;
@@ -155,21 +159,5 @@ public class ConfigUnit {
 
     public void setProducer(Producer producer) {
         this.producer = producer;
-    }
-
-    public Class<?> getKeyDeserializer() {
-        return keyDeserializer;
-    }
-
-    public void setKeyDeserializer(Class<?> keyDeserializer) {
-        this.keyDeserializer = keyDeserializer;
-    }
-
-    public Class<?> getValueDeserializer() {
-        return valueDeserializer;
-    }
-
-    public void setValueDeserializer(Class<?> valueDeserializer) {
-        this.valueDeserializer = valueDeserializer;
     }
 }

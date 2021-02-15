@@ -3,7 +3,7 @@ package org.chobit.spring;
 
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.chobit.spring.config.ConfigUnit;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -15,6 +15,9 @@ import org.springframework.context.annotation.Role;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG;
+import static org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG;
 
 
 /**
@@ -30,6 +33,7 @@ public class KafkaConfiguration {
 
 
     private final KafkaProperties properties;
+
 
     public KafkaConfiguration(KafkaProperties properties) {
         this.properties = properties;
@@ -70,7 +74,11 @@ public class KafkaConfiguration {
         }
 
         Collection<ConfigUnit> coll = properties.configs().stream()
-                .filter(e -> e.getKeyDeserializer().equals(StringDeserializer.class) && e.getValueDeserializer().equals(StringDeserializer.class))
+                .filter(e -> {
+                    Object keyS = e.producerConfig().get(KEY_SERIALIZER_CLASS_CONFIG);
+                    Object valS = e.producerConfig().get(VALUE_SERIALIZER_CLASS_CONFIG);
+                    return keyS.equals(StringSerializer.class) && valS.equals(StringSerializer.class);
+                })
                 .collect(Collectors.toSet());
 
         return new StringProducerTemplate(pCfg, coll);
