@@ -53,6 +53,7 @@ public class ConfigUnit {
         Map<String, Object> config = new HashMap<>(8);
 
         config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(GROUP_ID_CONFIG, groupId);
 
         if (null != consumer && null != consumer.getKeyDeserializer()) {
             config.put(KEY_DESERIALIZER_CLASS_CONFIG, consumer.getKeyDeserializer());
