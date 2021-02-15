@@ -1,7 +1,6 @@
-package org.chobit.spring.config;
+package org.chobit.spring;
 
 
-import org.chobit.spring.KafkaConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.context.annotation.Import;
 
