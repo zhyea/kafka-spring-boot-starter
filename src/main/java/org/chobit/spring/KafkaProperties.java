@@ -65,7 +65,9 @@ public class KafkaProperties implements InitializingBean {
         for (Map.Entry<String, ConfigUnit> ele : this.config.entrySet()) {
             String groupId = ele.getKey();
             ConfigUnit cfg = ele.getValue();
-            cfg.setGroupId(groupId);
+            if (isBlank(cfg.getGroupId())) {
+                cfg.setGroupId(groupId);
+            }
             check(cfg);
         }
     }
