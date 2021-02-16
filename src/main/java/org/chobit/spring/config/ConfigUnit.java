@@ -104,13 +104,13 @@ public class ConfigUnit {
         config.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
         if (null != producer && null != producer.getKeySerializer()) {
-            config.put(KEY_SERIALIZER_CLASS_CONFIG, consumer.getKeyDeserializer());
+            config.put(KEY_SERIALIZER_CLASS_CONFIG, producer.getKeySerializer());
         } else {
             config.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         }
 
         if (null != producer && null != producer.getValueSerializer()) {
-            config.put(VALUE_SERIALIZER_CLASS_CONFIG, consumer.getValueDeserializer());
+            config.put(VALUE_SERIALIZER_CLASS_CONFIG, producer.getValueSerializer());
         } else {
             config.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         }
