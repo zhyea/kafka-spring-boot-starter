@@ -40,6 +40,11 @@ public final class ConsumerBeanProcessor<K, V> implements Shutdown, SmartInitial
     private final List<ConsumerWorker<K, V>> workers;
 
     /**
+     * 消费线程总数
+     */
+    private final int totalWorkers;
+
+    /**
      * 通用消费配置
      */
     private final Map<String, Object> commonProps;
@@ -92,7 +97,7 @@ public final class ConsumerBeanProcessor<K, V> implements Shutdown, SmartInitial
 
         int totalConsumers = configs.size();
 
-        int totalWorkers = configs.stream().mapToInt(e -> e.getConsumer().getCount()).sum();
+        this.totalWorkers = configs.stream().mapToInt(e -> e.getConsumer().getCount()).sum();
 
         this.workers = new ArrayList<>(totalWorkers);
         this.processors = new ConcurrentHashMap<>(totalConsumers);
@@ -109,6 +114,11 @@ public final class ConsumerBeanProcessor<K, V> implements Shutdown, SmartInitial
 
 
     public void startup() {
+        if (totalWorkers <= 0) {
+            logger.info("Kafka consumer workers is none.");
+            return;
+        }
+
         Threads.newThread(() -> {
             // 等待启动信号，若未接到启动信号则sleep一段时间
             while (!startSignal.get()) {
