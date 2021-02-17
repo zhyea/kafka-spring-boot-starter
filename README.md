@@ -7,11 +7,11 @@
 这个组件已经提交到了maven中央仓库，可以直接通过依赖的形式引入：
 
 ```xml
-	<dependency>
-		<groupId>org.chobit.spring</groupId>
-		<artifactId>kafka-spring-boot-starter</artifactId>
-		<version>[0.2.2,)</version>
-	</dependency>
+<dependency>
+    <groupId>org.chobit.spring</groupId>
+    <artifactId>kafka-spring-boot-starter</artifactId>
+    <version>[0.2.2,)</version>
+</dependency>
 ```
 **0.2.2**是这两天刚发布的一个版本。
 
